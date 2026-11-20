@@ -1,0 +1,11 @@
+replicaCount: 1
+
+image:
+  repository: eks-2048
+  tag: "local"
+  pullPolicy: IfNotPresent
+
+containerPort: 8080
+
+service:
+  port: 80
