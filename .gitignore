@@ -1,1 +1,6 @@
 .sass-cache/
+
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
