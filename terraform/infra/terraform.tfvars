@@ -18,5 +18,5 @@ private_subnet_cidrs = [
   "10.20.32.0/20",
   "10.20.48.0/20",
 ]
-repository_name             = "eks-2048"
-cluster_name                = "eks-2048"
+repository_name = "eks-2048"
+cluster_name    = "eks-2048"
