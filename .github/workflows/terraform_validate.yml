@@ -69,4 +69,6 @@ jobs:
         run: terraform init -input=false
 
       - name: Preview Infrastructure Changes
+        env:
+          TF_VAR_eks_api_public_access_cidrs: ${{ secrets.TF_VAR_EKS_API_PUBLIC_ACCESS_CIDRS }}
         run: terraform plan -input=false -no-color -lock-timeout=60s
