@@ -2,8 +2,7 @@ name: Terraform Validate
 
 on:
   pull_request:
-    branches:
-      - deployment
+    branches: [deployment, production]
   
 permissions:
   contents: read
