@@ -4,4 +4,4 @@
 *.tfstate
 *.tfstate.*
 *.tfplan
-*.tfvars
+local.auto.tfvars

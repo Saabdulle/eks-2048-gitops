@@ -1,35 +1,72 @@
-name: Terraform Validate
+name: Terraform CI
 
 on:
   pull_request:
     branches: [deployment, production]
-  
+  push:
+    branches: [production]
+
 permissions:
   contents: read
+
+env:
+  TERRAFORM_VERSION: "1.17.2"
+
+defaults:
+  run:
+    working-directory: terraform/infra
 
 jobs:
   validate:
     name: Format and Validate Terraform
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: terraform/infra
-    
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Set Up Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
         with:
-          terraform_version: 1.16.4
-      
-      - name: check Terraform Format
+          terraform_version: "1.17.2"
+
+      - name: Check Terraform Formatting
         run: terraform fmt -check -recursive
 
-      - name: Terraform Initilisation
+      - name: Initialise Terraform for Validation
         run: terraform init -backend=false -input=false
 
-      - name: Terraform Validate
+      - name: Validate Terraform
         run: terraform validate
+
+  plan:
+    name: Terraform Plan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+    needs: validate
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set Up Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: "1.17.2"
+
+      - name: Authenticate to AWS
+        uses: aws-actions/configure-aws-credentials@v6.3.1
+        with:
+          role-to-assume: ${{ secrets.AWS_TERRAFORM_PLAN_ROLE_ARN }}
+          aws-region: eu-west-2
+          mask-aws-account-id: "true"
+
+      - name: Initialise Terraform with S3 Backend
+        run: terraform init -input=false
+
+      - name: Preview Infrastructure Changes
+        run: terraform plan -input=false -no-color -lock-timeout=60s
