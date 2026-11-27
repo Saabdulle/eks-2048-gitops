@@ -38,6 +38,15 @@ jobs:
 
       - name: Validate Terraform
         run: terraform validate
+      - name: Checkov to Scan Terraform 
+        uses: bridgecrewio/checkov-action@v12.1347.0
+        with:
+          directory: terraform/infra
+          framework: terraform
+          output_format: cli
+          # CKV2_AWS_19 does not recognize EIPs attached to NAT gateways.
+          skip_check: CKV2_AWS_19
+          soft_fail: false
 
   plan:
     name: Terraform Plan
@@ -69,6 +78,4 @@ jobs:
         run: terraform init -input=false
 
       - name: Preview Infrastructure Changes
-        env:
-          TF_VAR_eks_api_public_access_cidrs: ${{ secrets.TF_EKS_API_PUBLIC_ACCESS_CIDRS }}
         run: terraform plan -input=false -no-color -lock-timeout=60s

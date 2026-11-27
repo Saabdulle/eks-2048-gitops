@@ -8,6 +8,63 @@ resource "aws_vpc" "eks_2048_vpc" {
   }
 }
 
+resource "aws_default_security_group" "default" {
+  vpc_id  = aws_vpc.eks_2048_vpc.id
+  ingress = []
+  egress  = []
+}
+
+resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
+  name              = "/aws/vpc/${var.project_name}/flow-logs"
+  retention_in_days = 90
+  kms_key_id        = "arn:aws:kms:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:alias/aws/logs"
+}
+
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_role" "vpc_flow_logs" {
+  name = "${var.project_name}-vpc-flow-logs"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "vpc-flow-logs.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "vpc_flow_logs" {
+  role = aws_iam_role.vpc_flow_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+      ]
+      Resource = "${aws_cloudwatch_log_group.vpc_flow_logs.arn}:*"
+    }]
+  })
+}
+
+resource "aws_flow_log" "vpc" {
+  vpc_id               = aws_vpc.eks_2048_vpc.id
+  traffic_type         = "ALL"
+  log_destination_type = "cloud-watch-logs"
+  log_destination      = aws_cloudwatch_log_group.vpc_flow_logs.arn
+  iam_role_arn         = aws_iam_role.vpc_flow_logs.arn
+
+  depends_on = [aws_iam_role_policy.vpc_flow_logs]
+}
+
 resource "aws_internet_gateway" "eks_2048_igw" {
   vpc_id = aws_vpc.eks_2048_vpc.id
 
@@ -22,7 +79,7 @@ resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.eks_2048_vpc.id
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = var.availability_zones[count.index]
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     Name                     = "${var.project_name}-public-subnet-${count.index + 1}"
@@ -84,6 +141,7 @@ resource "aws_route_table_association" "private_subnet_association" {
   route_table_id = aws_route_table.private_route_table.id
 }
 
+#checkov:skip=CKV2_AWS_19: This EIP is attached to the NAT gateway, not an EC2 instance.
 resource "aws_eip" "eks_2048_nat_eip" {
   domain = "vpc"
 

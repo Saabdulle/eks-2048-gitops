@@ -14,7 +14,6 @@ module "ecr" {
 module "eks" {
   source = "./modules/eks"
 
-  cluster_name            = var.project_name
-  private_subnet_ids      = module.vpc.private_subnet_ids
-  api_public_access_cidrs = var.eks_api_public_access_cidrs
+  cluster_name       = var.project_name
+  private_subnet_ids = module.vpc.private_subnet_ids
 }

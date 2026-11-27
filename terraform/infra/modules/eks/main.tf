@@ -16,6 +16,12 @@ resource "aws_iam_role_policy_attachment" "cluster" {
   role       = aws_iam_role.cluster.name
 }
 
+resource "aws_kms_key" "eks_secrets" {
+  description             = "Encrypt Kubernetes secrets for ${var.cluster_name}"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+}
+
 resource "aws_iam_role" "nodes" {
   name = "${var.cluster_name}-nodes"
 
@@ -44,6 +50,8 @@ resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
   role_arn = aws_iam_role.cluster.arn
 
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
   access_config {
     authentication_mode                         = "API"
     bootstrap_cluster_creator_admin_permissions = true
@@ -52,8 +60,15 @@ resource "aws_eks_cluster" "this" {
   vpc_config {
     subnet_ids              = var.private_subnet_ids
     endpoint_private_access = true
-    endpoint_public_access  = true
-    public_access_cidrs     = var.api_public_access_cidrs
+    endpoint_public_access  = false
+  }
+
+  encryption_config {
+    provider {
+      key_arn = aws_kms_key.eks_secrets.arn
+    }
+
+    resources = ["secrets"]
   }
 
   depends_on = [aws_iam_role_policy_attachment.cluster]
