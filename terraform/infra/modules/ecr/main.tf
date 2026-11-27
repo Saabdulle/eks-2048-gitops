@@ -1,6 +1,6 @@
 resource "aws_ecr_repository" "eks-2048" {
   name                 = var.repository_name
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 
   lifecycle {
     prevent_destroy = true
