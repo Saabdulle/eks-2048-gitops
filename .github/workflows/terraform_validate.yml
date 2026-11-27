@@ -38,6 +38,13 @@ jobs:
 
       - name: Validate Terraform
         run: terraform validate
+      - name: Checkov to Scan Terraform 
+        uses: bridgecrewio/checkov-action@latest
+        with:
+          directory: terraform/infra
+          framework: terraform
+          output: cli
+          soft-fail: false
 
   plan:
     name: Terraform Plan
