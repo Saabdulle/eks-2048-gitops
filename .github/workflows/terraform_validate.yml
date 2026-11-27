@@ -43,8 +43,8 @@ jobs:
         with:
           directory: terraform/infra
           framework: terraform
-          output: cli
-          soft-fail: false
+          output_format: cli
+          soft_fail: false
 
   plan:
     name: Terraform Plan
