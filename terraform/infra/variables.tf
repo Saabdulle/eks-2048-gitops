@@ -30,7 +30,3 @@ variable "cluster_name" {
   description = "The name of the EKS cluster"
   type        = string
 }
-variable "eks_api_public_access_cidrs" {
-  description = "The CIDR blocks that is allowed access kubernetes cluster."
-  type        = list(string)
-}
