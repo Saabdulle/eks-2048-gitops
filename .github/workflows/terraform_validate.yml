@@ -39,7 +39,7 @@ jobs:
       - name: Validate Terraform
         run: terraform validate
       - name: Checkov to Scan Terraform 
-        uses: bridgecrewio/checkov-action@latest
+        uses: bridgecrewio/checkov-action@12.1347.0
         with:
           directory: terraform/infra
           framework: terraform
