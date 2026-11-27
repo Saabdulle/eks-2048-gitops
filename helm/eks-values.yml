@@ -1,0 +1,3 @@
+image:
+  repository: 224399155690.dkr.ecr.eu-west-2.amazonaws.com/eks-2048
+  tag: "PASTE_THE_FULL_COMMIT_SHA_TAG_HERE"
