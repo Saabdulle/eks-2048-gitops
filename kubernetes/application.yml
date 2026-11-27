@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: game-2048
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Saabdulle/eks-2048-gitops.git
+    targetRevision: production
+    path: helm
+    helm:
+      valueFiles:
+        - values-eks.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: game-2048
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
