@@ -17,7 +17,12 @@ resource "aws_default_security_group" "default" {
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name              = "/aws/vpc/${var.project_name}/flow-logs"
   retention_in_days = 90
+  kms_key_id        = "arn:aws:kms:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:alias/aws/logs"
 }
+
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role" "vpc_flow_logs" {
   name = "${var.project_name}-vpc-flow-logs"
