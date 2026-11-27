@@ -1,0 +1,31 @@
+name: 2048 Image CI
+
+on:
+  pull_request:
+    branches: [production, deployment]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-scan:
+    name: Build and scan 2048 image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image
+        run: docker build --pull --platform linux/amd64 --tag eks-2048:ci ./app
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: eks-2048:ci
+          format: table
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: "1"
