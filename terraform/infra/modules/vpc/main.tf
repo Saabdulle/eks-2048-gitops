@@ -102,3 +102,6 @@ resource "aws_nat_gateway" "eks_2048_nat" {
     Name = "${var.project_name}-nat"
   }
 }
+resource "aws_security_group" "restricted-sg" {
+  vpc_id = aws_vpc.eks_2048_vpc.id
+}
